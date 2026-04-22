@@ -213,6 +213,7 @@ class NewsWorker:
                     "status": "failed",
                     "error": state.error,
                     "retry_count": state.retry_count,
+                    "business_case_summary": state.business_case_summary if state.business_case_summary else "",
                 })
         except Exception as inner_e:
             logger.error("Error in failure handler: %s", inner_e)
