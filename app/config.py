@@ -25,6 +25,15 @@ class Settings(BaseSettings):
     anthropic_api_key: str = "sk-ant-..."
     claude_model: str = "claude-sonnet-4-202"
 
+    # Qdrant - vector store for product catalog and EU directive
+    qdrant_url: str = "http://192.168.2.185:6333"
+    qdrant_products_collection: str = "products"
+    qdrant_directives_collection: str = "directives"
+
+    # Embedding model - runs locally on Ollama
+    embedding_model: str = "nomic-embed-text"
+    embedding_dimenstions: int = 768
+
     # Redis key names - no need to change these unlesss you want namespacing
     stream_name: str = "news:incoming"
     consumer_group: str = "pipeline-wokers"
