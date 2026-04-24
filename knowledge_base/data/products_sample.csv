@@ -1,0 +1,20 @@
+Product Name,Features,Description
+Gas Clamp Sensor,Non-intrusive installation,"Clamps externally onto existing gas pipes without cutting, drilling, or interrupting gas supply."
+Gas Clamp Sensor,Real-time gas consumption monitoring,Continuously monitors gas flow rates and consumption in near real time.
+Gas Clamp Sensor,Continuous gas flow detection,"Identifies prolonged or continuous gas flow that may indicate leaks, faulty appliances, or valves left open."
+Gas Clamp Sensor,Consumption deviation analysis,Compares real-time gas usage against historical baselines to identify abnormal or inefficient consumption patterns.
+Gas Clamp Sensor,Abnormal consumption alerts,Sends alerts when gas consumption exceeds expected thresholds or deviates significantly from normal behavior.
+Gas Clamp Sensor,Budget deviation monitoring,Tracks gas usage against predefined consumption or cost budgets and triggers alerts when limits are exceeded.
+Gas Clamp Sensor,Methane leak pattern detection,"Identifies gas flow patterns consistent with methane leaks for early warning and risk mitigation, without requiring invasive gas sensors."
+Gas Clamp Sensor,Inefficient appliance detection,"Detects abnormal consumption signatures that suggest malfunctioning or inefficient gas appliances such as boilers, furnaces, or water heaters."
+Gas Clamp Sensor,Usage trend forecasting,Analyzes historical gas consumption data to forecast future usage trends and anticipate seasonal demand increases.
+Water Clamp Sensor,Non-intrusive installation,"Clamps externally onto existing water pipes without cutting, drilling, or interrupting water supply."
+Water Clamp Sensor,Real-time water consumption monitoring,Continuously monitors water flow rates and consumption in near real time.
+Water Clamp Sensor,Proactive water leak detection,Detects abnormal flow patterns that indicate potential leaks within the monitored pipe section.
+Water Clamp Sensor,Continuous flow detection,"Identifies prolonged water flow events that may indicate leaks, faulty valves, or appliances left running."
+Water Clamp Sensor,Consumption deviation analysis,Compares real-time water usage against historical baselines to identify abnormal or inefficient usage patterns.
+Water Clamp Sensor,Abnormal consumption alerts,Sends alerts when water consumption exceeds expected thresholds or deviates significantly from normal behavior.
+Water Clamp Sensor,Budget deviation alerts,Monitors water usage against predefined consumption budgets and triggers alerts when limits are exceeded.
+Water Clamp Sensor,Empty pipe detection,Detects absence of water flow indicative of empty or disconnected pipes.
+Water Clamp Sensor,Water pipe freezing detection,Identifies flow and signal patterns consistent with pipe freezing conditions to enable early intervention.
+Water Clamp Sensor,Water hammer damage prevention,"Detects dangerous pressure spikes from appliances damaging pipes, preventing costly burst pipes and appliance failures."
