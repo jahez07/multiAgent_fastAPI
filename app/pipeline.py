@@ -110,49 +110,7 @@ class GraphState(TypedDict, total=False):
 # Agent nodes (PLACEHOLDERS - replace with real LLM calls in Phase 2)
 # ──────────────────────────────────────────────────────────────
 
-async def classify(state: GraphState) -> dict[str, Any]:
-    """
-    Agent 1: News Clasifier (runs on Ollama / local GPU)
-
-    Responsibilities:
-      - Extract country and city if not already provided
-      - Classify the sector (water, energy, infrastructure, etc.)
-      - Score relevance to our product portfolio ( 0.0 to 1.0 )
-      - Decide: is this worth analyzing further? (is_relevant)
-
-    In Phase 2, this will call Ollama:
-    
-    ```python
-    from httpx import AsyncClient
-    async with AsyncClient() as client:
-        resp = await client.post(
-            f"{settings.ollama_base_url}/api/generate",
-            json={
-                "model": setting.ollama_model,
-                "prompt": f"Classify this news: {state['title']}...",
-                "stream": False,
-            }
-        )
-        result = resp.json()
-        # parse structured output from result["response"]
-    ```
-    """
-    logger.info(
-        "[Agent 1] Classifying: %s",
-        state.get("title", "Unknown")[:60],
-    )
-
-    # ── PLACEHOLDER: Simulate classification ──
-    # In production, Ollama extracts these from the news text.
-    # For now, return hard-coded values so the pipeline runs end-to-end.
-    return {
-        "country": state.get("country") or "France",
-        "city": state.get("city") or "Paris",
-        "sector": "Water_infrastructure",
-        "relevance_score": 0.85,
-        "is_relevant": True,
-    }
-
+from app.agents.classifier import classify
 
 async def analyze(state: GraphState) -> dict[str, Any]:
     """

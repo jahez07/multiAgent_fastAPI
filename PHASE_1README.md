@@ -5,7 +5,7 @@ Multi-agent sales intelligence pipeline that processes European news, maps city 
 ## Architecture
 
 ```
-n8n (RSS) ──POST──▶ FastAPI webhook ──▶ Redis Stream ──▶ Worker ──▶ LangGraph ──▶ PostgreSQL
+n8n (RSS) ── POST ──▶ FastAPI webhook ──▶ Redis Stream ──▶ Worker ──▶ LangGraph ──▶ PostgreSQL
                      validates           queues           consumes    agents 1-4    stores results
                      deduplicates        buffers          retries     (placeholders) ↓
                                                                                    NextJS dashboard

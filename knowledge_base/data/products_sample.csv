@@ -1,8 +1,17 @@
 Product Name,Features,Description
+SensePod,Dew point calculation,"Calculates dew point using temperature and humidity data to identify conditions that may cause condensation, mold, or material degradation."
+SensePod,Flood detection,"Detects the presence of water when levels exceed predefined thresholds, indicating potential flooding or water ingress."
+SensePod,Vibration monitoring,Monitors vibration patterns when attached to appliances or equipment to detect abnormal operation or mechanical issues.
+SensePod,Flexible placement,"Can be installed in rooms, near appliances, inside cabinets, or close to potential leak points based on monitoring requirements."
+SensePod,Threshold-based alerts,Generates alerts when monitored parameters exceed predefined thresholds set by the system or user.
+SensePod,Historical environmental data tracking,"Analyzes historical temperature, humidity, flood, and vibration data to identify trends and recurring issues."
+SensePod,Localized water ingress detection,"Detects early-stage water leakage from air conditioning units, windows, or external wall infiltration by identifying localized moisture accumulation before full flooding occurs."
 Gas Clamp Sensor,Non-intrusive installation,"Clamps externally onto existing gas pipes without cutting, drilling, or interrupting gas supply."
 Gas Clamp Sensor,Real-time gas consumption monitoring,Continuously monitors gas flow rates and consumption in near real time.
 Gas Clamp Sensor,Continuous gas flow detection,"Identifies prolonged or continuous gas flow that may indicate leaks, faulty appliances, or valves left open."
 Gas Clamp Sensor,Consumption deviation analysis,Compares real-time gas usage against historical baselines to identify abnormal or inefficient consumption patterns.
+Gas Clamp Sensor,Location-specific gas monitoring,Enables gas consumption measurement at specific pipe sections or appliance supply lines rather than only at the main gas meter.
+Gas Clamp Sensor,Gas usage event identification,"Identifies gas usage events based on flow rate, duration, and timing characteristics."
 Gas Clamp Sensor,Abnormal consumption alerts,Sends alerts when gas consumption exceeds expected thresholds or deviates significantly from normal behavior.
 Gas Clamp Sensor,Budget deviation monitoring,Tracks gas usage against predefined consumption or cost budgets and triggers alerts when limits are exceeded.
 Gas Clamp Sensor,Methane leak pattern detection,"Identifies gas flow patterns consistent with methane leaks for early warning and risk mitigation, without requiring invasive gas sensors."
@@ -13,8 +22,28 @@ Water Clamp Sensor,Real-time water consumption monitoring,Continuously monitors 
 Water Clamp Sensor,Proactive water leak detection,Detects abnormal flow patterns that indicate potential leaks within the monitored pipe section.
 Water Clamp Sensor,Continuous flow detection,"Identifies prolonged water flow events that may indicate leaks, faulty valves, or appliances left running."
 Water Clamp Sensor,Consumption deviation analysis,Compares real-time water usage against historical baselines to identify abnormal or inefficient usage patterns.
+Water Clamp Sensor,Water usage event identification,Detects and classifies water usage events based on flow characteristics and duration.
 Water Clamp Sensor,Abnormal consumption alerts,Sends alerts when water consumption exceeds expected thresholds or deviates significantly from normal behavior.
 Water Clamp Sensor,Budget deviation alerts,Monitors water usage against predefined consumption budgets and triggers alerts when limits are exceeded.
 Water Clamp Sensor,Empty pipe detection,Detects absence of water flow indicative of empty or disconnected pipes.
 Water Clamp Sensor,Water pipe freezing detection,Identifies flow and signal patterns consistent with pipe freezing conditions to enable early intervention.
 Water Clamp Sensor,Water hammer damage prevention,"Detects dangerous pressure spikes from appliances damaging pipes, preventing costly burst pipes and appliance failures."
+Water Clamp Sensor,Backflow detection,"Detects reverse flow conditions in water pipes that may indicate contamination risks, cross-connections, or backflow events affecting water quality."
+Water Clamp Sensor,Water stagnation detection,"Detects prolonged periods with no water movement in pipes, indicating stagnation conditions associated with bacterial growth risks such as Legionella."
+Water Clamp Sensor,Air-water mixture detection,"Identifies abnormal ultrasonic signal patterns indicative of air presence in water lines, which may signal leaks, pump issues, or system faults."
+Water Clamp Sensor,Drought restriction monitoring,"Supports detection of water usage patterns that violate municipal drought restrictions, such as excessive outdoor or non-essential water use."
+Electrical Panel Sensor,Non-intrusive installation,"Sensor strips are mounted above existing circuit breakers without cutting wires or modifying the electrical panel, allowing installation without disrupting power supply."
+Electrical Panel Sensor,DIY installation,Sensor can be installed with no or minimal calibration steps from the user side.
+Electrical Panel Sensor,Real-time load state detection,"Detects and classifies individual circuit states such as OFF, low, medium, and high power in near real time."
+Electrical Panel Sensor,Individual circuit consumption tracking,Enables monitoring of electricity usage at circuit level rather than whole-panel aggregation.
+Electrical Panel Sensor,Ghost load detection,"Identifies circuits drawing power when they are expected to be inactive, helping detect standby and phantom loads."
+Electrical Panel Sensor,Abnormal consumption detection,"Detects unexpected electricity usage spikes that may indicate malfunctioning appliances, unsafe devices, or abnormal household behavior."
+Electrical Panel Sensor,Location-based load identification,Associates electrical loads with physical locations or appliances rather than anonymous circuit numbers.
+Electrical Panel Sensor,AR-assisted load labeling,Uses augmented reality tools during setup to visually map and label circuits for easier identification in the application.
+Electrical Panel Sensor,Consumption heat map generation,Generates visual heat maps highlighting high-consumption circuits and zones within a building.
+Electrical Panel Sensor,Historical consumption comparison,Compares real-time circuit consumption against historical baselines to detect abnormal usage patterns.
+Electrical Panel Sensor,Budget deviation alerts,Triggers alerts when circuit or panel consumption exceeds predefined budget thresholds based on historical behavior.
+Electrical Panel Sensor,Heat safety monitoring,"Monitors the surface temperature of individual circuit breakers to detect abnormal heat buildup that may indicate overloads, loose connections, or potential failure risks."
+Electrical Panel Sensor,Best time to run appliance notifications,"Sends user notifications indicating optimal time windows to operate specific appliances based on electricity cost data, historical consumption trends, and predefined user preferences."
+Electrical Panel Sensor,Forgotten appliance detection,Detects appliances left ON unnecessarily for extended periods and generates alerts to reduce safety risks and energy waste.
+Electrical Panel Sensor,Consumption evolution tracking,"Tracks electricity usage patterns over time to understand behavioral changes, seasonal variations, and the impact of efficiency measures."
