@@ -36,7 +36,7 @@ Our graph looks like this:
     │                       write_case (Agent 4 — Claude)
     │                           │
     │                           ▼
-    │                         END
+    │                          END
     │
     └── is_relevant=False → END (skip all agents, mark as "skipped")
 
