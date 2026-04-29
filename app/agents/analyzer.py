@@ -183,5 +183,37 @@ async def analyze(state: dict) -> dict[str, Any]:
             "urgecy_score": 0.5,
             "opportunity_score": 0.5,
         }
+    # Validate with Pydanitc
+    try:
+        ouput = AnalyzerOutput.model_validate(result)
+    except Exception as e:
+        logger.warning("    [Agent 2] Invalid output from Claude: %s", e)
+        # Use the raw dict if Pydantic fails - Claude usually returns close-enough
+        return {
+            "problems": result.get("problems", []),
+            "stakeholders": result.get("stakeholders", []),
+            "urgency_score": min(max(float(result.get("urgency_score", 0.5)), 0.0), 1.0),
+            "opportunity_score": min(max(float(result.get("opportunity_score", 0.5)), 0.0), 1.0),
+        }
     
+    # Convert to dicts for LangGraph state
+    problems = [p.model_dump() for p in ouput.problems]
+    stakeholders = [s.model_dump() for s in ouput.stakeholders]
+
+    logger.info(
+        "   [Agent 2] Found %d problems, %d stakeholders | urgenc=%.2f opportunity=%.2f",
+        len(problems), len(stakeholders),
+        ouput.urgency_score, ouput.opportunity_score,
+    )
+
+    if ouput.urgency_reasoning:
+        logger.info("   [Agent 2] Urgency: %s", ouput.urgency_reasoning[:100])
+    if ouput.opportunity_reasoning:
+        logger.info("   [Agent 2] Opportunity: %s", ouput.opportunity_reasoning[:100])
     
+    return {
+        "problems": problems,
+        "stakeholders": stakeholders,
+        "urgency_score": ouput.urgency_score,
+        "opportunity_score": ouput.opportunity_score,
+    }

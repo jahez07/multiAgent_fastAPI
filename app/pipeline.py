@@ -110,59 +110,12 @@ class GraphState(TypedDict, total=False):
 # Agent nodes (PLACEHOLDERS - replace with real LLM calls in Phase 2)
 # ──────────────────────────────────────────────────────────────
 
+# Agent 1: Classify News - Ollama Llama3.1:8b
 from app.agents.classifier import classify
 
-async def analyze(state: GraphState) -> dict[str, Any]:
-    """
-    Agent 2: Problem Analyzer (runs on Claude API)
+# Agent 2: Analyze News - Claude Sonnet API
+from app.agents.analyzer import analyze
 
-    Responsibilities:
-      - Identify the core problems the city faces
-      - Analyze root causes behind the news
-      - Map stakeholders (who decides, who buys, who's affected)
-      - Score urgency and opportunity
-
-    In Phase 2, this will call Claude API:
-    
-    ```python
-    import anthropic
-    client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
-    response = await client.messages.create(
-        model=settings.claude_model,
-        max_tokens=2000,
-        system = "You are an expert analyst ....",
-        messages=[
-            {
-                "role": "user",
-                "content": f"Analyze: {state['title']}..."
-            }
-        ]
-    )
-    ```
-    """
-    logger.info(
-        "   [Agent 2] Analyzing problems: %s - %s",
-        state.get("country", "Unknown"),
-        state.get("title")[:50],
-    )
-
-    # ── PLACEHOLDER: Simulate problem analysis ──
-    return {
-        "problems": [
-            {
-                "problem": "Aging pipe infrastructure causing water loss",
-                "root_cause": "Defered maintenance and lack of monitoring",
-                "scale": "City-wide, affecting 30% \of water supply",
-            }
-        ],
-        "stakeholders": [
-            {"role": "Municipal water utility", "type": "decision_maker"},
-            {"role": "City council finance committee", "type": "budget_approver"},
-            {"role": "EU compliance office", "type": "regulator"},
-        ],
-        "urgency_score": 0.9,
-        "opportunity_score": 0.85,
-    }
 
 async def solve(state: GraphState) -> dict[str, Any]:
     """
