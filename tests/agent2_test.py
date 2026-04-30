@@ -34,7 +34,7 @@ def check(name, condition, detail=""):
 # Test cases: pre-classified news items (as Agent 1 would output them)
 TEST_CASES = [
     {
-        "title": "Munich loses 30% of water supply due to aging pipe infrastructure",
+        "title": "Munich loses 30%_ of water supply due to aging pipe infrastructure",
         "summary": (
             "The city of Munich reported that nearly a third of its treated "
             "water is lost before reaching consumers due to deteriorating pipe "
@@ -64,7 +64,7 @@ TEST_CASES = [
     {
         "title": "Copenhagen battles rising mold problems in public housing",
         "summary": (
-            "Over 40% of Copenhagen's public housing stock shows signs of "
+            "Over 40%_ of Copenhagen's public housing stock shows signs of "
             "mold damage caused by inadequate ventilation and humidity control. "
             "The city plans EUR 200M investment in environmental monitoring "
             "and building remediation."
