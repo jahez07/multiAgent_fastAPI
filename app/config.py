@@ -23,7 +23,7 @@ class Settings(BaseSettings):
 
     # Claude API - for Agents 2, 3, 4 (reasoning + writing)
     anthropic_api_key: str = "sk-ant-..."
-    claude_model: str = "claude-sonnet-4-202"
+    claude_model: str = "claude-sonnet-4-6"
 
     # Qdrant - vector store for product catalog and EU directive
     qdrant_url: str = "http://192.168.2.185:6333"
