@@ -97,6 +97,11 @@ Respond with ONLY a JSON object in this exact format:
     "opportunity_score": 0.0,
     "opportunity_reasoning": "One sentence explaning the opportunity score"
 }
+
+CONSTRAINTS:
+    -   Return a maximum of 3 problems (the most important ones)
+    -   Return a maximum of 5 stakeholders (highest influence first)
+    -   Keep each field under 2 sentences.
 """
 
 # Output validation
