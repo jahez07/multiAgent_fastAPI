@@ -71,7 +71,13 @@ async def claude_generate(
     }
 
     if system:
-        payload["system"] = system
+        payload["system"] = [
+            {
+                "type": "text",
+                "text": system,
+                "cache_control": {"type": "ephemeral"},
+            }
+        ]
 
     try:
         start = time.time()
