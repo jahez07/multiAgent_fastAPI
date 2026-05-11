@@ -62,7 +62,6 @@ async def claude_generate(
         "model": settings.claude_model,
         "max_tokens": max_tokens,
         "temperature": temperature,
-        "cache_control": {"type": "ephemeral"},
         "messages": [
             {
                 "role": "user",
@@ -71,8 +70,17 @@ async def claude_generate(
         ],
     }
 
+    # Cache the system prompt — it's large and stable across requests.
+    # Placing cache_control here (not top-level) ensures the stable prefix
+    # is cached rather than the varying user message.
     if system:
-        payload["system"] = system
+        payload["system"] = [
+            {
+                "type": "text",
+                "text": system,
+                "cache_control": {"type": "ephemeral"},
+            }
+        ]
 
     try:
         start = time.time()
@@ -96,11 +104,13 @@ async def claude_generate(
         
         # Log usage for cost tracking
         usage = data.get("usage", {})
-        input_tokens = usage.get("input_token", 0)
+        input_tokens = usage.get("input_tokens", 0)
         output_tokens = usage.get("output_tokens", 0)
+        cache_read = usage.get("cache_read_input_tokens", 0)
+        cache_write = usage.get("cache_creation_input_tokens", 0)
         logger.info(
-            "Claude: %d in / %d out tokens, %.1fs",
-            input_tokens, output_tokens, elapsed,
+            "Claude: %d in / %d out tokens | cache_read=%d cache_write=%d | %.1fs",
+            input_tokens, output_tokens, cache_read, cache_write, elapsed,
         )
 
         if not text.strip():

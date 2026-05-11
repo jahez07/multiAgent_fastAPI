@@ -215,6 +215,15 @@ async def analyze(state: dict) -> dict[str, Any]:
         logger.info("   [Agent 2] Urgency: %s", ouput.urgency_reasoning[:100])
     if ouput.opportunity_reasoning:
         logger.info("   [Agent 2] Opportunity: %s", ouput.opportunity_reasoning[:100])
+
+    # returning_item = {
+    #     "problems": problems,
+    #     "stakeholders": stakeholders,
+    #     "urgency_score": ouput.urgency_score,
+    #     "opportunity_score": ouput.opportunity_score,
+    # }
+
+    # print(returning_item)
     
     return {
         "problems": problems,
