@@ -78,7 +78,7 @@ TEST_CASES = [
 ]
 
 VALID_STAKEHOLDER_TYPES = {
-    "decision_maker", "budget_approver", "regular",
+    "decision_maker", "budget_approver", "regulator",
     "technical_evaluator", "end_user"
 }
 
