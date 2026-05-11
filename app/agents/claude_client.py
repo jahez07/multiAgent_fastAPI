@@ -62,6 +62,7 @@ async def claude_generate(
         "model": settings.claude_model,
         "max_tokens": max_tokens,
         "temperature": temperature,
+        "cache_control": {"type": "ephemeral"},
         "messages": [
             {
                 "role": "user",
@@ -71,13 +72,7 @@ async def claude_generate(
     }
 
     if system:
-        payload["system"] = [
-            {
-                "type": "text",
-                "text": system,
-                "cache_control": {"type": "ephemeral"},
-            }
-        ]
+        payload["system"] = system
 
     try:
         start = time.time()
