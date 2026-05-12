@@ -238,3 +238,113 @@ def format_rag_context(
 
 
 # Agent function
+async def solve(state: dict) -> dict[str, Any]:
+    """
+    Agent 3: Match products to problems and align with EU directives.
+
+    Flow:
+        1. Build search queries from problems given by Agent 2
+        2. Search Qdrant products collection
+        3. Search Qdrant directives collection
+        4. Format RAG content
+        5. Pass to Claude for reasoning
+        6. Validate and return structured output
+    """
+    title = state.get("title", "")
+    country = state.get("country", "Unknown")
+    city = state.get("city", "Unknown")
+    sector = state.get("sector", "general")
+    problems = state.get("problems", [])
+
+    logger.info(
+        "   [Agent 3] Matching solutions: %s - %s",
+        country, title[:50]
+    )
+
+    # -- Step 1: Build search queries --
+    queries = build_search_queries(state=state)
+    logger.info(
+        "   [Agent 3] Built %d search queries from %d problems",
+        len(queries), len(problems)
+    )
+
+    # Step 2 & 3: Search Qdrant
+    product_results = await retrieve_products(queries, top_k_per_query=5)
+    directive_results = await retrieve_directives(queries, top_k_per_query=5)
+
+    logger.info(
+        "   [Agent 3] Retrieved %d product features, %d directive articles",
+        len(product_results), len(directive_results)
+    )
+
+    # Handle empty retrieval
+    if not product_results and not directive_results:
+        logger.warning("   [Agent 3] No results from Qdrant - returning empty matches")
+        return{
+            "product_matches": [],
+            "directive_matches": [],
+        }
+    
+    # Step 4: Format RAG Context
+    rag_context = format_rag_context(problems, product_results, directive_results)
+
+    # Step 5: Call Claude
+    prompt = f"""Analyze this situation and map our products to the problems:
+
+    NEWS: {title}
+LOCATION: {city}, {country}
+SECTOR: {sector}
+
+{rag_context}
+
+Based on the problems identified and the product features and directive articles retrieved above,
+create the product-to-problem mappings and directive alignments.
+Respond with the JSON object."""
+    
+    result = await claude_json(
+        prompt=prompt,
+        system=SYSTEM_PROMPT,
+        max_tokens=2000,
+        temperature=0.2,
+    )
+
+    # Handle Claude failure
+    if result is None:
+        logger.warning("    [Agent 3] Claude failed = returning raw retrieval results")
+        # Fallback: return top product matches without Claude reasoning
+        fallback_products = []
+        for r in product_results[:3]:
+            p = r["payload"]
+            fallback_products.append({
+                "product": p.get("product", ""),
+                "feature": p.get("feature", ""),
+                "problem_addresses": "Analysis unavailable - Claude API failed",
+                "how_it_helps": p.get("description", ""),
+                "estimated_impact": "Unknown",
+            })
+        
+        return {
+            "product_matches": fallback_products,
+            "directive_matches": [],
+        }
+    
+
+    # Step 6: Validate with Pydantic
+    try:
+        output = SolutionOutput.model_validate(result)
+        product_matches = [m.model_dump() for m in output.product_matches]
+        directive_mathes = [m.model_dump() for m in output.directive_matches]
+    except Exception as e:
+        logger.warning("    [Agent 3] Pydantic validation failed: %s - using raw", e)
+        product_analysis = result.get("product_matches", [])
+        directive_matches = result.get("directive_matches", [])
+
+    logger.info(
+        "   [Agent 3] Result: %d product matches, %d directive matches",
+        len(product_matches), len(directive_matches),
+    )
+
+    return {
+        "product_matches": product_matches,
+        "directive_matches": directive_matches,
+    }
