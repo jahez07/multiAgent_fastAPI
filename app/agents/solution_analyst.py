@@ -126,3 +126,115 @@ def build_search_queries(state: dict) -> list[str]:
         queries.append(f"{title} {summary}"[:300])
 
     return queries
+
+async def retrieve_products(queries: list[str], top_k_per_query: int = 5) -> list[dict]:
+    """
+    Search the products collection for each query and deduplicate results.
+
+    Deduplication by feature name prevents the same feature from 
+    appearing multiple time when different problems match the same product.
+    """
+    seen_features = set()
+    all_results = []
+
+    for query in queries:
+        try:
+            results = await search_products(query, top_k=top_k_per_query)
+            for r in results:
+                feature_key = r["payload"].get("feature", "")
+                if feature_key not in seen_features:
+                    seen_features.add(feature_key)
+                    all_results.append(r)
+        except Exception as e:
+            logger.warning(
+                "   [Agent 3] Product search failed for query: %s - %s",
+                query[:50], str(e)[:100]
+            )
+    
+    # Sort by relevance score descending, keep top 10
+    all_results.sort(key=lambda x:x.get("score", 0), reverse=True)
+
+    return all_results[:10]
+
+
+async def retrieve_directives(queries: list[str], top_k_per_query: int = 3) -> list[dict]:
+    """
+    Search the directives collection for each query and deduplicate. 
+
+    Deduplication by directives + article prevents the same article
+    from appearing multiple times.
+    """
+    seen_articles = set()
+    all_results = []
+
+    for query in queries:
+        try:
+            results = await search_directives(query, top_k=top_k_per_query)
+            for r in results:
+                article_key = (
+                    r["payload"].get("directive", "") + 
+                    r["payload"].get("article", "")
+                )
+                if article_key not in seen_articles:
+                    seen_articles.add(article_key)
+                    all_results.append(r)
+        except Exception as e:
+            logger.warning(
+                "   [Agent 3] Directive search failed for query: %s - %s", 
+                query[:50], str(e)[:100]
+            )
+    all_results.sort(key=lambda x:x.get("score", 0), reverse=True)
+    return all_results[:8]
+
+
+def format_rag_context(
+        problems: list[dict],
+        product_results: list[dict],
+        directive_results: list[dict],
+) -> str:
+    """
+    Format retrieved results into a structured context block for Claude.
+
+    This is what Claude sees alongside the problems - it's the
+    "knowledge" part of RAG. Formatted compactly to minimize tokens.
+    """
+    sections = []
+
+    # Problems section
+    sections.append("=== PROBLEMS IDENTIFIED ===")
+    for i, p in enumerate(problems, 1):
+        if isinstance(p, dict):
+            sections.append(
+                f"{i}. {p.get('problem', 'Unknown')}\n"
+                f"  Root cause: {p.get('root_cause', 'Unknown')}\n"
+                f"  Scale: {p.get('scale', 'Unknown')}"
+            )
+    
+    # Product features section
+    sections.append("\n=== MATCHING PRODUCT FEATURES FROM OUR CATALOG ===")
+    for i , r in enumerate(product_results, 1):
+        p = r["payload"]
+        score = r.get("score", 0)
+        sections.append(
+            f"{i}. [{p.get('product', '?')}] {p.get('feature', '?')}"
+            f"(revlevance: {score:.2f})\n"
+            f"  {p.get('description', '')}"
+        )
+    
+    # Directive articles section
+    sections.append("\n=== RELEVANT EU DIRECTIVE ARTICLES ===")
+    for i, r in enumerate(directive_results, 1):
+        p = r["payload"]
+        score = r.get("score", 0)
+        # Truncate long directive text to save tokens
+        text = p.get("text", "")[:400]
+        sections.append(
+            f"{i}. [{p.get('directive', '?')}] {p.get('article', '?')}"
+            f"(relevance: {score:.2f})\n"
+            f"  {text}"
+        )
+    
+    return "\n".join(sections)
+
+
+# Agent function
