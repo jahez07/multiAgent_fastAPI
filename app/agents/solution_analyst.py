@@ -46,5 +46,41 @@ Your task:
 
 RULES:
     - Only match features that genuinely address the problem - don't force-fit
-    - If no product feature
+    - If no product feature matches a problem, skip it
+    - If no directive matches a solution, set directive fields to null
+    - Be specific: "Our Water Clamp Sensor's proactive leak detection identifies abnormal flow pattern in Munich's agin 30-year-old pipe sections" not "Our sensor detects leaks"
+    - Estimate financial or operational impact where the data supports it
+    - Maximum 5 product matches (most relevant only)
+    - Maximum 3 directive matches (most relevant only)
+
+Respond with ONLY JSON object:
+{
+    "product_matches": [
+        {
+            "product": "Product name",
+            "feature": "Specific feature name",
+            "problem_addressed": "Which problem this solve",
+            "how_it_helps": "2-3 sentences explaining specifically how this feature addresses the city's problem",
+            "estimated_impact": "Quantified impact if possible (cost savings, `%` improvements, etc.)"
+        }
+    ],
+    "directive_matches":[
+        {
+            "directive": "Full directive name and number",
+            "article": "Specific article number and title",
+            "solution_aligned": "Which product/feature this relates to",
+            "alignment": "2-3 sentences explaining how deploying our solution helps comply with this specific article"
+        }
+    ]
+}
 """
+
+# Output validation
+
+class ProductMatch(BaseModel):
+    product: str = ""
+    feature: str = ""
+    problem_addressed: str = ""
+    how_it_helps: str = ""
+    estimated_impact: str = ""
+
