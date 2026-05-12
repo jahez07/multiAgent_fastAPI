@@ -116,68 +116,8 @@ from app.agents.classifier import classify
 # Agent 2: Analyze News - Claude Sonnet API
 from app.agents.analyzer import analyze
 
-
-async def solve(state: GraphState) -> dict[str, Any]:
-    """
-    Agent 3: Solution Analyst (runs on Claude API + RAG)
-
-    Responsibilities:
-      - Match problems to specific product features
-      - Explain HOW each feature solves the problem
-      - Align the solution with relevant EU directives
-      - Cite specific directive articles and requirements
-
-    In Phase 2, this will:
-      1. Query Qdrant vector store for relevant product features
-      2. Query Qdrant for relevant EU directives
-      3. Pass both to Claude with the problem analysis 
-    """
-    logger.info(
-        "   [Agent 3] Matching solutions: %s",
-        state.get("title")[:50],
-    )
-
-    # ── PLACEHOLDER: Simulate product + directive matching ──
-    return {
-        "product_matches": [
-            {
-                "feature": "Water leak detection",
-                "problem_solved": "Aging pipe infrastructure causing water loss",
-                "how_it_helps": (
-                    "Real-time acoustic sensors detect leaks within hours"
-                    "instead of weeks, reducing water loss from 30% to under 5%"
-                ),
-                "estimated_savings": "EUR 12M annually in recovered water",
-            },
-            {
-                "feature": "Anomaly detection",
-                "problem_solved": "Lack of monitoring infrastructure",
-                "how_it_helps": (
-                    "ML-based pattern recognition identifies pressure anomalies "
-                    "before they become visible leaks, enabling preventive repair."
-                ),
-                "estimated_savings": "EUR 3M annually in avoided emergency repairs",
-            },
-        ],
-        "directive_matches": [
-            {
-                "directive": "EU Water Framework Directive",
-                "article": "Article 4 - Envoronmental objectives",
-                "alignment": (
-                    "Member states must achieve good status for all water bodies."
-                    "Reducing 30% water loss directly supports this requiremenet."
-                ),
-            },
-            {
-                "directive": "Drinking Water Directive (EU 2020/2184)",
-                "article": "Article 4 - Quality standards",
-                "alignment": (
-                    "Requires member states to minimize water loss. Our solution"
-                    "provides the monitoring infrastructure needed for compliance."
-                ),
-            },
-        ],
-    }
+# Agent 3: Real implementation using Claude Sonnet + Qdrant RAG
+from app.agents.solution_analyst import solve
 
 
 async def write_case(state: GraphState) -> dict[str, Any]:
