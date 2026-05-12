@@ -84,3 +84,45 @@ class ProductMatch(BaseModel):
     how_it_helps: str = ""
     estimated_impact: str = ""
 
+class DirectiveMatch(BaseModel):
+    directive: str = ""
+    article: str = ""
+    solution_aligned: str = ""
+    alignment: str = ""
+
+class SolutionOutput(BaseModel):
+    product_matches: list[ProductMatch] = Field(default_factory=list)
+    directive_matches: list[DirectiveMatch] = Field(default_factory=list)
+
+
+# RAG retrieval helpers
+
+def build_search_queries(state: dict) -> list[str]:
+    """
+    Build search queries from the problems identified by Agent 2. 
+
+    Strategy: use each problem's description + root cause as a query. 
+    This gives Qdrant more semantic signal than just the news title. 
+    Also include the news title as a fallback query. 
+    """
+    queries = []
+    problems = state.get("problems", [])
+
+    for problem in problems:
+        if isinstance(problem, dict):
+            # Combine problem descrption + root cause for richer query
+            parts = []
+            if problem.get("problem"):
+                parts.append(problem["problem"])
+            if problem.get("root_cause"):
+                parts.append(problem["root_cause"])
+            if parts:
+                queries.append(" ".join(parts)[:300])
+    
+    # Fallback: use the news title if no problems
+    if not queries:
+        title = state.get("title", "")
+        summary = state.get("summary", "")
+        queries.append(f"{title} {summary}"[:300])
+
+    return queries
