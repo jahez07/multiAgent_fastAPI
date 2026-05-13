@@ -306,6 +306,7 @@ Respond with the JSON object."""
         system=SYSTEM_PROMPT,
         max_tokens=2000,
         temperature=0.2,
+        timeout = 60.0
     )
 
     # Handle Claude failure
@@ -333,10 +334,10 @@ Respond with the JSON object."""
     try:
         output = SolutionOutput.model_validate(result)
         product_matches = [m.model_dump() for m in output.product_matches]
-        directive_mathes = [m.model_dump() for m in output.directive_matches]
+        directive_matches = [m.model_dump() for m in output.directive_matches]
     except Exception as e:
         logger.warning("    [Agent 3] Pydantic validation failed: %s - using raw", e)
-        product_analysis = result.get("product_matches", [])
+        product_matches = result.get("product_matches", [])
         directive_matches = result.get("directive_matches", [])
 
     logger.info(
