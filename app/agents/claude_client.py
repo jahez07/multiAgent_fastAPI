@@ -141,6 +141,7 @@ async def claude_json(
         system: str = "",
         max_tokens: int = 2000,
         temperature: float = 0.2,
+        timeout: float = 30.0,
 ) -> dict | None:
     
     """
@@ -154,6 +155,7 @@ async def claude_json(
         system=system,
         max_tokens=max_tokens,
         temperature=temperature,
+        timeout=timeout
     )
 
     if raw is None:
