@@ -171,6 +171,8 @@ async def run_tests():
     # Test 3: Full Agent 3 with Claude
     from app.agents.solution_analyst import solve
 
+    print("\nTest 3: Full Agent 3 with Claude")
+
     total_time = 0
 
     for tc in TEST_CASES:

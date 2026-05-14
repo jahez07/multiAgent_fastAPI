@@ -119,44 +119,8 @@ from app.agents.analyzer import analyze
 # Agent 3: Real implementation using Claude Sonnet + Qdrant RAG
 from app.agents.solution_analyst import solve
 
-
-async def write_case(state: GraphState) -> dict[str, Any]:
-    """
-    Agent 4: Business Case Writer (runs on Claude API)
-
-    Responsibilities:
-      - Synthesize everything into a compelling business case
-      - Include: problem, solution, regulatory alignment, ROI
-      - Write in a style suitable for presenting to city officials
-
-    In Phase 2, Claude will receieve the full enriched state
-    and produce a structured pitch document.
-    """
-    logger.info(
-        "   [Agent 4] Writing business case: %s",
-        state.get("title")[:50],
-    )
-
-    # ── PLACEHOLDER: Simulate business case generation ──
-    country = state.get("country", "Unknown")
-    city = state.get(("city"), "Unknown")
-
-    return {
-        "business_case_summary":(
-            f"OPPORTUNITY: {city}, {country}\n\n"
-            f"PORBLEM: City faces significant water infrastructure challenges "
-            f"with 30% of water loss due to aging pipes.\n\n"
-            f"SOLUTION: Deploy water leak detection and anomaly detection "
-            f"systems across the municipal water network.\n\n"
-            f"REGULATORY FIT: Aligns with EU Water Framework Directive "
-            f"(Article 4) and Drinking Water Directive (EU 2020/2184).\n\n"
-            f"ROI: Estimated EUR 15M annual savings through reduced water "
-            f"loss and avoided emergency repairs. \n\n"
-            f"RECOMMENDED NEXT STEP: Schedule a technical demo with the "
-            f"municipal water utility."
-        ),
-        "status":"completed"
-    }
+# Agent 4: Business Case writer
+from app.agents.business_case import write_case
 
 
 # Routing logic (conditional edge after Agent 1)
