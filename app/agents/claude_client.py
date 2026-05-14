@@ -34,6 +34,7 @@ async def claude_generate(
         max_tokens: int = 2000,
         temperature: float = 0.2,
         timeout: float = 30.0,
+        model: str | None = None
 ) -> str | None:
     """
     Call Claude API and return the text response.
@@ -52,6 +53,9 @@ async def claude_generate(
     Uses httpx directly instead of the anthropic SDK to keep
     dependencies minimal. The API is a simple POST. 
     """
+
+    model = model or settings.claude_model
+
     headers = {
         "x-api-key": settings.anthropic_api_key,
         "content-type": "application/json",
@@ -59,7 +63,7 @@ async def claude_generate(
     }
 
     payload = {
-        "model": settings.claude_model,
+        "model": model,
         "max_tokens": max_tokens,
         "temperature": temperature,
         "messages": [
@@ -142,6 +146,7 @@ async def claude_json(
         max_tokens: int = 2000,
         temperature: float = 0.2,
         timeout: float = 30.0,
+        model_name: str | None = None
 ) -> dict | None:
     
     """
@@ -155,7 +160,8 @@ async def claude_json(
         system=system,
         max_tokens=max_tokens,
         temperature=temperature,
-        timeout=timeout
+        timeout=timeout,
+        model = model_name
     )
 
     if raw is None:

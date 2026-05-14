@@ -246,7 +246,7 @@ async def write_case(state: dict) -> dict:
         result = await claude_json(
             prompt=build_prompt(state),
             system=SYSTEM_PROMPT,
-            max_tokens=1500,
+            max_tokens=4000,
             temperature=0.4,
             timeout=60.0,
             model_name=settings.claude_haiku,
@@ -274,4 +274,7 @@ async def write_case(state: dict) -> dict:
         logger.error("Agent 4 json.dumps failed: %s", e)
         bc_json = json.dumps(_minimal_fallback(state), ensure_ascii=False)
 
-    return {**state, "business_case_summary": bc_json}
+    return {
+        "business_case_summary": bc_json,
+        "status": "completed",
+    }
