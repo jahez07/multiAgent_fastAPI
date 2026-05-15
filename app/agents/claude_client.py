@@ -265,8 +265,29 @@ async def claude_json(
         text = text.rsplit("```", 1)[0] # Remove last fence
     text = text.strip()
 
+    # Extract just the JSON object - find the outermost { }
+    # This handles cases where Claude adds commentary after the JSON
+    start = text.find("{")
+    if start == -1:
+        logger.error("  No JSON object found in response: %s", raw[:200])
+        return None
+    
+    # Find the matching closing brace
+    depth = 0
+    end = start
+    for i in range(start, len(text)):
+        if text[i] == "{":
+            depth += 1
+        elif text[i] == "}":
+            depth -= 1
+            if depth == 0:
+                end = i + 1
+                break
+
+    json_str = text[start:end]
+
     try:
-        return json.loads(text)
+        return json.loads(json_str)
     except json.JSONDecodeError as e:
         logger.error(
             "   Claude returned invalid JSON: %s - raw: %s",
