@@ -32,11 +32,11 @@ def check(name, condition, detail= ""):
 TEST_CASES = [
     # ── Should be RELEVANT ──
     {
-        "title": "Munich loses 30% of water supply due to aging pipe infrastructure",
-        "summary": "The city of Munich reported that nearly a third of its treated water is lost before reaching consumers due to deteriorating pipe networks.",
-        "expect_relevant": True,
-        "expect_sector": "water_infrastructure",
-        "expect_country": "Germany",
+        "title": "European Commission faces backlash over plans to fast-track polluting projects",
+        "summary": "According to the Corporate Europe Observatory report, proposed EU legislation would speed up approval processes for projects labelled as “strategic” or of “overriding public interest,” which could in some cases allow them to bypass standard environmental review requirements.",
+        "expect_relevant": False,
+        "expect_sector": "not_relevant",
+        "expect_country": "none",
     },
     {
         "title": "Barcelona mandates energy audits for all public buildings by 2027",
@@ -76,22 +76,22 @@ TEST_CASES = [
  
     # ── Should be NOT RELEVANT ──
     {
-        "title": "Paris court jails ex-Élysée silverware keeper for porcelain theft ring",
+        "title": "How sunburn inspired a new way to store energy",
         "summary": "A former presidential tableware steward was found guilty of stealing pieces, his partner of helping sell them online.",
         "expect_relevant": False,
         "expect_sector": "not_relevant",
         "expect_country": None,  # Don't care
     },
     {
-        "title": "Italy summons Russian ambassador over TV presenter's insults",
-        "summary": "Italy has summoned Russia's ambassador after a state TV presenter made derogatory comments about Italian political leaders.",
+        "title": "'Don't swim' at 12 of 14 river bathing sites, as more locations announced",
+        "summary": "Too much bacteria linked to faeces found at almost all England's designated river bathing sites",
         "expect_relevant": False,
         "expect_sector": "not_relevant",
         "expect_country": None,
     },
     {
-        "title": "EU Trade Chief heads to Washington hoping to unlock steel tariff deal",
-        "summary": "The European Union's trade commissioner travels to Washington this week for negotiations on reducing steel and aluminium tariffs.",
+        "title": "'We're living in a shed because of river pollution'",
+        "summary": "Jane and Tony Coyle spent seven years waiting for planning permission due to River Lugg pollution.",
         "expect_relevant": False,
         "expect_sector": None,
         "expect_country": None,

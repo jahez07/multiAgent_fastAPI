@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # Ollama - for Agent 1 (classifier) running on your local GPUs
     ollama_base_url: str = "http://localhost:11434"
-    ollama_model: str = "llama3.1:8b"
+    ollama_model: str = "deepseek-r1:8b"
 
     # Claude API - for Agents 2, 3, 4 (reasoning + writing)
     anthropic_api_key: str = "sk-ant-..."
