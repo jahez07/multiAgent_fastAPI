@@ -11,6 +11,7 @@ import json
 import logging
 
 from app.agents.claude_client import claude_json
+from app.databse import log_error
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -250,6 +251,8 @@ async def write_case(state: dict) -> dict:
             temperature=0.4,
             timeout=60.0,
             model_name=settings.claude_haiku,
+            agent_name="businessCaseWriter_agent_4",
+            pipeline_id=state.get("pipeline_id"),
         )
 
         if not isinstance(result, dict):
@@ -266,12 +269,24 @@ async def write_case(state: dict) -> dict:
 
     except Exception as e:
         logger.error("Agent 4 unexpected error: %s", e)
+
+        await log_error(
+            "agent_4", e, pipeline_id=state.get("pipeline_id"),
+            context={"title": state.get("title")[:100]},
+            severity="error",
+        )
         business_case = _minimal_fallback(state)
 
     try:
         bc_json = json.dumps(business_case, ensure_ascii=False)
     except Exception as e:
         logger.error("Agent 4 json.dumps failed: %s", e)
+
+        await log_error(
+            "agent_4_minimalFeedback", e, pipeline_id= state.get("pipeline_id"),
+            context={"title": state.get("title")[:100]},
+            severity="error",
+        )
         bc_json = json.dumps(_minimal_fallback(state), ensure_ascii=False)
 
     return {

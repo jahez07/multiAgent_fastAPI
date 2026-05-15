@@ -29,6 +29,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from app.agents.claude_client import claude_json
+from app.databse import log_error
 
 logger = logging.getLogger("pipeline")
 
@@ -168,11 +169,19 @@ async def analyze(state: dict) -> dict[str, Any]:
         system=SYSTEM_PROMPT,
         max_tokens=2000,
         temperature=0.2,
+        agent_name="agent_2",
+        pipeline_id=state.get("pipeline_id"),
     )
 
     # Handle Claude failure
     if result is None:
         logger.warning("    [Agent 2] Claude failed - using minimal fallback")
+        await log_error(
+            "agent_2", Exception("Claude returned None"),
+            pipeline_id=state.get("pipeline_id"),
+            context={"title": title[:100]},
+            severity="warning"
+        )
         return {
             "problems":[
                 {

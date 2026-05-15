@@ -27,6 +27,7 @@ import logging
 import httpx
 
 from app.config import settings
+from app.databse import log_error
 
 logger = logging.getLogger("ollama")
 
@@ -36,6 +37,9 @@ async def ollama_generate(
         system: str = "",
         temperature: float = 0.1,
         timeout: float = 60.0,
+        model_name: str = settings.ollama_model,
+        agent_name: str = "unknown",
+        pipeline_id: str | None = None,
 ) -> dict | None:
     """
     Calla Ollama's /api/generate endpoint and return parsed JSON.
@@ -88,16 +92,41 @@ async def ollama_generate(
     except json.JSONDecodeError as e:
         logger.error("Ollama returned invalid JSON: %s - raw: %s",
                      e, raw_text[:200] if 'raw_text' in dir() else "?")
+        
+        await log_error(
+            "ollama_api", e, pipeline_id=pipeline_id,
+            context={"agent": agent_name, "model": model_name, "timeout": timeout},
+            severity="warning"
+        )
         return None
     
-    except httpx.TimeoutException:
+    except httpx.TimeoutException as e:
         logger.error("Ollama request timed out after %.0fs", timeout)
+
+        await log_error(
+            "ollama_api", e, pipeline_id=pipeline_id,
+            context={"agent": agent_name, "model": model_name, "timeout": timeout},
+            severity="error"
+        )
         return None
     
-    except httpx.ConnectError:
+    except httpx.ConnectError as e:
         logger.error("Cannot connect to Ollama at %s 0 is it running?", settings.ollama_base_url)
+
+        await log_error(
+            "ollama_api", e, pipeline_id= pipeline_id,
+            context= {"agent": agent_name, "model": model_name, "timeout": timeout},
+            severity="critical",
+        )
         return None
+        
     
     except Exception as e:
         logger.error("Ollama unexpected error: %s - %s", type(e).__name__, str(e)[:200])
+
+        await log_error(
+            "ollama_api", e, pipeline_id= pipeline_id,
+            context= {"agent": agent_name, "model": model_name},
+            severity="error"
+        )
         return None

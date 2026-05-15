@@ -25,6 +25,7 @@ import time
 import httpx
 
 from app.config import settings
+from app.databse import log_api_usage, log_error
 
 logger = logging.getLogger("claude")
 
@@ -34,7 +35,9 @@ async def claude_generate(
         max_tokens: int = 2000,
         temperature: float = 0.2,
         timeout: float = 30.0,
-        model: str | None = None
+        model: str | None = None,
+        agent_name: str = "unknown",
+        pipeline_id: str | None = None,
 ) -> str | None:
     """
     Call Claude API and return the text response.
@@ -45,6 +48,8 @@ async def claude_generate(
         max_tokens:     Max response length
         temperature:    Low = more deterministic (good for strucutred output)
         timeout:        Seconds to wait
+        model:          Override model (e.g. setting.claude_haiku for Agent)
+        agent_name:     Which agent is calling (for cost tracking)
 
     Returns:
         The raw text response from Claude or None if anything fails.
@@ -85,6 +90,11 @@ async def claude_generate(
                 "cache_control": {"type": "ephemeral"},
             }
         ]
+    
+    input_tokens = 0
+    output_tokens = 0
+    cache_read = 0
+    cache_write = 0
 
     try:
         start = time.time()
@@ -112,9 +122,23 @@ async def claude_generate(
         output_tokens = usage.get("output_tokens", 0)
         cache_read = usage.get("cache_read_input_tokens", 0)
         cache_write = usage.get("cache_creation_input_tokens", 0)
+
         logger.info(
             "Claude: %d in / %d out tokens | cache_read=%d cache_write=%d | %.1fs",
             input_tokens, output_tokens, cache_read, cache_write, elapsed,
+        )
+
+        # Log to api_usage table
+        await log_api_usage(
+            agent=agent_name,
+            model=model,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            response_time=elapsed,
+            success=True,
+            pipeline_id=pipeline_id,
+            cache_read_tokens=cache_read,
+            cache_write_tokens=cache_write,
         )
 
         if not text.strip():
@@ -123,21 +147,83 @@ async def claude_generate(
         
         return text.strip()
     
-    except httpx.TimeoutException:
+    except httpx.TimeoutException as e:
+        elapsed = time.time() - start
         logger.error("  Claude request timed out after %.0fs", timeout)
+
+        await log_api_usage(
+            agent=agent_name,
+            model=model,
+            input_tokens=input_tokens,
+            output_tokens=0,
+            response_time=elapsed,
+            success=False,
+            pipeline_id=pipeline_id,
+        )
+
+        await log_error(
+            "claude_api", e, pipeline_id=pipeline_id,
+            context={"agent": agent_name, "model": model, "timeout": timeout},
+            severity="error"
+        )
+
         return None
     
     except httpx.HTTPStatusError as e:
+        elapsed = time.time() - start
         status = e.response.status_code
         body = e.response.text[:300]
+
         if status == 401:
             logger.error("  Claude API key invalid - check ANTHROPIC_API_KEY in .env")
+            severity = "critical"
         elif status == 429:
             logger.warning("    Claude rate limited - consider reducing WORKER_CONCURRENCY")
+            severity = "warning"
         elif status == 529:
-            logger.warning("    Claude API overloaded = retrying may help")
+            logger.warning("    Claude API overloaded - retrying may help")
+            severity = "warning"
         else:
             logger.error("  Claude HTTP %d: %s", status, body)
+            severity = "error"
+        
+        await log_api_usage(
+            agent=agent_name, model=model,
+            input_tokens=input_tokens, output_tokens=0,
+            response_time=elapsed, success=False,
+            pipeline_id=pipeline_id,
+        )
+        await log_error(
+            "claude_api", e, pipeline_id=pipeline_id,
+            context={"agent": agent_name, "status": status, "body": body},
+            severity=severity
+        )
+        return None
+    
+    except httpx.ConnectError as e:
+        elapsed = time.time() - start
+        logger.error("  Cannot connect to Claude API")
+
+        await log_error(
+            "claude_api", e, pipeline_id=pipeline_id,
+            context={"agent": agent_name},
+            severity="critical"
+        )
+
+        return None
+    
+    except Exception as e:
+        elapsed = time.time() - start
+        logger.error(
+            "  Claude unexpected error: %s - %s",
+            type(e).__name__, str(e)[:200]
+        )
+
+        await log_error(
+            "claude_api", e, pipeline_id=pipeline_id,
+            context={"agent": agent_name, "model": model},
+            severity="error"
+        )
         return None
 
 async def claude_json(
@@ -146,7 +232,9 @@ async def claude_json(
         max_tokens: int = 2000,
         temperature: float = 0.2,
         timeout: float = 30.0,
-        model_name: str | None = None
+        model_name: str | None = None,
+        agent_name: str = "unknown",
+        pipeline_id: str | None = None,
 ) -> dict | None:
     
     """
@@ -161,7 +249,9 @@ async def claude_json(
         max_tokens=max_tokens,
         temperature=temperature,
         timeout=timeout,
-        model = model_name
+        model = model_name,
+        agent_name=agent_name,
+        pipeline_id=pipeline_id,
     )
 
     if raw is None:
@@ -181,6 +271,12 @@ async def claude_json(
         logger.error(
             "   Claude returned invalid JSON: %s - raw: %s",
             e, raw[:200]
+        )
+
+        await log_error(
+            "claude_api", e, pipeline_id=pipeline_id,
+            context={"agent": agent_name, "raw_response": raw[:500]},
+            severity="warning"
         )
         
         return None

@@ -136,7 +136,7 @@ class PipelineError(Base):
     source = Column(String, nullable=False, index=True)
     error_type = Column(String, nullable=False, index=True)
     error_message = Column(String, nullable=False)
-    stack_track = Column(Text)
+    stacktrace = Column(Text)
     pipeline_id = Column(String, index=True)
     context = Column(JSONB)
     severity = Column(String, nullable=False, index=True, default="error")
@@ -349,7 +349,7 @@ async def log_error(
                 source = source,
                 error_type = type(error).__name__,
                 error_message = str(error)[:2000],
-                stack_trace = traceback.format_exc()[:5000],
+                stacktrace = traceback.format_exc()[:5000],
                 pipeline_id = pipeline_id,
                 context = safe_context,
                 severity = severity,

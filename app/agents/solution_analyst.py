@@ -26,6 +26,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from app.agents.claude_client import claude_json
+from app.databse import log_error
 from knowledge_base.search import search_products, search_directives
 
 logger = logging.getLogger("pipeline")
@@ -306,12 +307,21 @@ Respond with the JSON object."""
         system=SYSTEM_PROMPT,
         max_tokens=2000,
         temperature=0.2,
-        timeout = 60.0
+        timeout = 60.0,
+        agent_name="agent_3",
+        pipeline_id= state.get("pipeline_id"),
     )
 
     # Handle Claude failure
     if result is None:
-        logger.warning("    [Agent 3] Claude failed = returning raw retrieval results")
+        logger.warning("    [Agent 3] Claude failed - returning raw retrieval results")
+
+        await log_error(
+            "agent_3", Exception("Claude failed - returning raw retrieval results"),
+            pipeline_id= state.get("pipeline_id"),
+            context={"title": title[:100]},
+            severity="warning",
+        )
         # Fallback: return top product matches without Claude reasoning
         fallback_products = []
         for r in product_results[:3]:
@@ -337,6 +347,13 @@ Respond with the JSON object."""
         directive_matches = [m.model_dump() for m in output.directive_matches]
     except Exception as e:
         logger.warning("    [Agent 3] Pydantic validation failed: %s - using raw", e)
+
+        await log_error(
+            "agent_3", Exception("Pydantic validation failed"),
+            pipeline_id= state.get("pipeline_id"),
+            context={"title": title[:100]},
+            severity= "warning",
+        )
         product_matches = result.get("product_matches", [])
         directive_matches = result.get("directive_matches", [])
 

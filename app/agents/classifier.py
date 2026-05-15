@@ -29,6 +29,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from app.agents.ollama_client import ollama_generate
+from app.databse import log_error
 
 logger = logging.getLogger("pipeline")
 
@@ -182,6 +183,8 @@ Classify this article and respond with the JSON object.
         system=SYSTEM_PROMPT,
         temperature=0.1,
         timeout=60.0,
+        agent_name="classifier_agent_1",
+        pipeline_id=state.get("pipeline_id")
     )
 
     # Handle Ollama failure
@@ -200,6 +203,13 @@ Classify this article and respond with the JSON object.
         output = ClassifierOutput.model_validate(result)
     except Exception as e:
         logger.warning("    [Agent 1] Invalid output from Ollama: %s: - using fallback", e)
+
+        await log_error(
+            "agent_1", e,
+            pipeline_id= state.get("pipeline_id"),
+            context={"title": title[:100]},
+            severity="warning",
+        )
         return {
             "country": existing_city or "Unknown",
             "city": existing_city or "Unknown",
