@@ -12,7 +12,6 @@ Run:
 """
 
 import asyncio
-import time
 import sys
 from uuid import uuid4
 

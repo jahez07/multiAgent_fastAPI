@@ -23,7 +23,6 @@ from datetime import datetime, timezone
 
 from sqlalchemy import (
     Column, String, Float, Boolean, DateTime, Text, Integer,
-    create_engine, text,
 )
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, DeclarativeBase

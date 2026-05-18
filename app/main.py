@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 import redis.asyncio as redis
-from fastapi import FastAPI, Request, Header, HTTPException
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from app.config import settings

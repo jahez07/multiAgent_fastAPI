@@ -13,7 +13,6 @@ Run:
 """
 
 import httpx
-import json
 import sys
 
 WEBHOOK_URL = "http://192.168.2.185:8000/webhook/news"
