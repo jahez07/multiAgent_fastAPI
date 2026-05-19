@@ -18,7 +18,7 @@ n8n (RSS) ──▶ FastAPI webhook ──▶ Redis Stream ──▶ Worker ─�
 START
   │
   ▼
-Agent 1: Classifier (Ollama / Llama 3.1:8b — local GPU)
+Agent 1: Classifier (Ollama / deepseek-r1:8b — local GPU)
   │  Extracts country, city, sector. Scores relevance 0.0–1.0.
   │
   ├── relevance ≥ 0.4 ──▶ Agent 2: Problem Analyzer (Claude Sonnet)
@@ -31,7 +31,7 @@ Agent 1: Classifier (Ollama / Llama 3.1:8b — local GPU)
   │                         │  Maps product features → problems → directives.
   │                         │
   │                         ▼
-  │                       Agent 4: Business Case Writer (Claude Sonnet)
+  │                       Agent 4: Business Case Writer (Claude Haiku)
   │                         │  Synthesizes a pitch document for city officials.
   │                         ▼
   │                        END
@@ -39,7 +39,7 @@ Agent 1: Classifier (Ollama / Llama 3.1:8b — local GPU)
   └── relevance < 0.4 ──▶ END (skipped — no Claude API calls wasted)
 ```
 
-Agent 1 filters ~80% of irrelevant articles using a cheap local model before any Claude API calls are made.
+Agent 1 filters ~80% of irrelevant articles using a cheap local model before any Claude API calls are made. Agent 4 uses Claude Haiku (rather than Sonnet) because writing structured output requires less reasoning depth and keeps costs low.
 
 ## Architecture
 
@@ -49,9 +49,11 @@ Agent 1 filters ~80% of irrelevant articles using a cheap local model before any
 | Worker | `app/worker.py` | Consumes from Redis, runs LangGraph, saves to PostgreSQL |
 | Pipeline | `app/pipeline.py` | LangGraph graph with 4 agent nodes and conditional routing |
 | Classifier | `app/agents/classifier.py` | Agent 1 — Ollama for relevance filtering |
-| Analyzer | `app/agents/analyzer.py` | Agent 2 — Claude for problem analysis |
-| Solution Analyst | `app/agents/solution_analyst.py` | Agent 3 — Claude + RAG for product/directive matching |
+| Analyzer | `app/agents/analyzer.py` | Agent 2 — Claude Sonnet for problem analysis |
+| Solution Analyst | `app/agents/solution_analyst.py` | Agent 3 — Claude Sonnet + RAG for product/directive matching |
+| Business Case Writer | `app/agents/business_case.py` | Agent 4 — Claude Haiku for sales pitch generation |
 | Knowledge base | `knowledge_base/` | Qdrant ingestion and search for products and EU directives |
+| Database | `app/databse.py` | PostgreSQL schema — `pipeline_results`, `pipeline_errors`, `api_usage` |
 | Config | `app/config.py` | All settings via environment variables (pydantic-settings) |
 
 ## Project structure
@@ -60,13 +62,14 @@ Agent 1 filters ~80% of irrelevant articles using a cheap local model before any
 multiAgent_fastAPI/
 ├── app/
 │   ├── agents/
-│   │   ├── analyzer.py          # Agent 2: Problem analysis (Claude)
+│   │   ├── analyzer.py          # Agent 2: Problem analysis (Claude Sonnet)
+│   │   ├── business_case.py     # Agent 4: Business case writing (Claude Haiku)
 │   │   ├── classifier.py        # Agent 1: News classification (Ollama)
-│   │   ├── claude_client.py     # Claude API wrapper
+│   │   ├── claude_client.py     # Claude API wrapper (usage + cost tracking)
 │   │   ├── ollama_client.py     # Ollama API wrapper
-│   │   └── solution_analyst.py  # Agent 3: Product/directive matching (Claude + RAG)
-│   ├── config.py                # Environment config
-│   ├── databse.py               # PostgreSQL schema and UPSERT
+│   │   └── solution_analyst.py  # Agent 3: Product/directive matching (Claude Sonnet + RAG)
+│   ├── config.py                # Environment config (pydantic-settings)
+│   ├── databse.py               # PostgreSQL schema and operations
 │   ├── main.py                  # FastAPI webhook
 │   ├── models.py                # Pydantic data contracts
 │   ├── pipeline.py              # LangGraph graph definition
@@ -80,8 +83,10 @@ multiAgent_fastAPI/
 │   ├── ingest_products.py       # Loads product catalog into Qdrant
 │   └── search.py                # Qdrant search functions (used by Agent 3)
 ├── tests/
-│   ├── agent1_test.py
-│   ├── agent2_test.py
+│   ├── agent1_test.py           # Agent 1 (Classifier) unit tests
+│   ├── agent2_test.py           # Agent 2 (Analyzer) unit tests
+│   ├── agent3_test.py           # Agent 3 (Solution Analyst) unit tests
+│   ├── agent4_test.py           # Agent 4 (Business Case Writer) unit tests
 │   ├── test1_webhook.py
 │   ├── test2_redis.py
 │   ├── test3_pipeline.py
@@ -89,6 +94,7 @@ multiAgent_fastAPI/
 │   └── test5_phase1.py
 ├── scripts/
 │   └── inspect_redis.py
+├── test_webhook.py              # Standalone webhook smoke test
 ├── assets/                      # Architecture diagrams
 ├── docker-compose.yml           # PostgreSQL + pgAdmin + Qdrant
 └── requirements.txt
@@ -102,7 +108,7 @@ multiAgent_fastAPI/
 docker compose up -d
 ```
 
-Starts PostgreSQL (5432), pgAdmin (5050), and Qdrant (6333/6334).
+Starts PostgreSQL (5432), pgAdmin (5050), and Qdrant (6333/6334). Redis must be running separately (e.g. `redis-server` or via your system service).
 
 If PostgreSQL fails with a credentials error, the volume has stale data:
 
@@ -127,8 +133,10 @@ Create a `.env` file in the project root:
 WEBHOOK_API_KEY=<generate with: python -c "import secrets; print(secrets.token_urlsafe(32))">
 DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/news_pipeline
 ANTHROPIC_API_KEY=sk-ant-...
+CLAUDE_MODEL=claude-sonnet-4-6
+CLAUDE_HAIKU=claude-haiku-4-5
 OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=llama3.1:8b
+OLLAMA_MODEL=deepseek-r1:8b
 QDRANT_URL=http://localhost:6333
 EMBEDDING_MODEL=nomic-embed-text
 ```
@@ -163,6 +171,17 @@ python -m app.worker
 
 ### 7. Run tests
 
+Agent-level unit tests:
+
+```bash
+python tests/agent1_test.py
+python tests/agent2_test.py
+python tests/agent3_test.py
+python tests/agent4_test.py
+```
+
+Integration tests:
+
 ```bash
 python tests/test1_webhook.py
 python tests/test2_redis.py
@@ -177,19 +196,18 @@ Add an HTTP Request node at the end of your RSS workflow:
 
 - **URL:** `http://your-server:8000/webhook/news`
 - **Method:** POST
-- **Headers:** `X-API-Key: <your key>`
 - **Body:**
 
 ```json
 {
   "title": "{{ $json.title }}",
-  "summary": "{{ $json.description }}",
   "link": "{{ $json.link }}",
-  "published_at": "{{ $json.pubDate }}"
+  "isoDate": "{{ $json.pubDate }}",
+  "content": "{{ $json.description }}"
 }
 ```
 
-`country`, `city`, `tags`, and `raw_content` are optional — Agent 1 extracts country and city from the article text if not provided.
+`country` and `city` are optional — Agent 1 infers them from the article text if not provided.
 
 ## API endpoints
 
@@ -198,6 +216,14 @@ Add an HTTP Request node at the end of your RSS workflow:
 | GET | `/health` | Health check (Redis connectivity) |
 | POST | `/webhook/news` | Receive a news item from n8n |
 | GET | `/queue/stats` | Stream length, pending messages, dead letter count |
+
+## Database tables
+
+| Table | Description |
+|---|---|
+| `pipeline_results` | One row per news item — all agent outputs, scores, and status |
+| `pipeline_errors` | Centralised error log from every component (agents, worker, webhook) |
+| `api_usage` | Per-call Claude token counts and calculated USD costs |
 
 ## Useful commands
 
@@ -228,9 +254,13 @@ docker exec -it <postgres-container> psql -U postgres -d news_pipeline \
 docker exec -it <postgres-container> psql -U postgres -d news_pipeline \
   -c "SELECT pipeline_id, country, sector, title FROM pipeline_results WHERE status='completed' ORDER BY completed_at DESC LIMIT 5;"
 
+# API cost summary by agent
+docker exec -it <postgres-container> psql -U postgres -d news_pipeline \
+  -c "SELECT agent, model, COUNT(*), SUM(total_cost) FROM api_usage GROUP BY agent, model ORDER BY agent;"
+
 # Full reset
 docker exec -it <postgres-container> psql -U postgres -d news_pipeline \
-  -c "TRUNCATE pipeline_results;"
+  -c "TRUNCATE pipeline_results, pipeline_errors, api_usage;"
 ```
 
 ### Knowledge base search (interactive)
@@ -249,9 +279,10 @@ All settings are in `app/config.py` and can be overridden via `.env`:
 | `REDIS_URL` | `redis://localhost:6379/0` | Redis connection URL |
 | `DATABASE_URL` | `postgresql+asyncpg://...` | PostgreSQL connection URL |
 | `ANTHROPIC_API_KEY` | — | Claude API key (required) |
-| `CLAUDE_MODEL` | `claude-sonnet-4-6` | Model for Agents 2, 3, 4 |
+| `CLAUDE_MODEL` | `claude-sonnet-4-6` | Model for Agents 2 and 3 |
+| `CLAUDE_HAIKU` | `claude-haiku-4-5` | Model for Agent 4 (Business Case Writer) |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama server URL |
-| `OLLAMA_MODEL` | `llama3.1:8b` | Model for Agent 1 |
+| `OLLAMA_MODEL` | `deepseek-r1:8b` | Model for Agent 1 |
 | `QDRANT_URL` | `http://192.168.2.185:6333` | Qdrant vector store URL |
 | `EMBEDDING_MODEL` | `nomic-embed-text` | Ollama embedding model |
 | `WORKER_CONCURRENCY` | `2` | Parallel pipeline executions |
